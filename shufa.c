@@ -3,6 +3,7 @@
 #include "front.h"
 #include "pir.h"
 #include "cds.h"
+#include "sth30.h"  
 
 #define FOSC        11059200UL
 #define BRT         (65536 - FOSC / 115200 / 4)
@@ -50,12 +51,23 @@ void M_Delay(u16 NOs)
  }
 void display_left()
 {
-	display_graphic_32x32(1,0,zi6);
-	display_graphic_32x32(1,30,zi5); 
-	display_graphic_32x32(1,64,zi4); 
-	display_graphic_32x32(1,94,zi3); 
-	display_graphic_32x32(1,128,zi2); 
-	display_graphic_32x32(1,160,zi1); 
+	static u8 i=0;
+	i++;
+	if(i%3==0)
+	{
+		display_graphic_32x32(5,0,zi6);
+		display_graphic_32x32(1,0,zi5); 
+	}
+	else if(i%3==1)
+	{
+	    display_graphic_32x32(5,0,zi3); 
+		display_graphic_32x32(1,0,zi4); 
+	}
+	else if(i%3==2)
+	{
+		display_graphic_32x32(1,0,zi1); 
+		display_graphic_32x32(5,0,zi2); 
+	}
 }
 void display_right()
 {
@@ -65,20 +77,33 @@ void display_right()
 	lcd_show_char(6,176,'.');
 	lcd_show_char(7,176,volt_value/10%10);
 	lcd_show_char(8,176,'V');
+
+	display_graphic_16x32(1,35,temp_get()/10);
+	display_graphic_16x32(3,35,temp_get()%10);
+	display_graphic_32x32(5,35,zi7);
+
+	display_graphic_16x32(1,70,humi_get()/10);
+	display_graphic_16x32(3,70,humi_get()%10);
+	display_graphic_32x32(5,70,zi8);
+	
+
+	
+	read_temp_hum_cmd();
 }
 void main()
 {
-		u16 data1;
+	u16 data1;
 	//P_SW1 = 0x00;                               //RXD/P3.0, TXD/P3.1
-  Init_lcd();
-  ADC_Init();
-    PIR_INT();
-	//UartInit();
+	Init_lcd();
+	ADC_Init();
+	PIR_INT();
+	SHT30_Init();
+
 	CDS_INT();
 	Displine(clear);
-		ES = 1;
-   while(1)
-   {
+	ES = 1;
+    while(1)
+    {
 		 if(CDS==0)
 		 {
 				BLACK_ED=1;
@@ -99,5 +124,5 @@ void main()
 		 	//UartSend(data1/256);
 		 	//UartSend(data1%256);
 
-   }
+    }
 }
